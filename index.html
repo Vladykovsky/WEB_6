@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>React</title>
+</head>
+<body>
+    <div id="app"> </div>
+     
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.25.0/babel.min.js"></script>
+    
+    <script type="text/babel">
+      class MyComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          
+          this.state = {students: [], name: "", surname: "", age: "", average: "", index: -1};
+
+          fetch('http://localhost:3000/base.json')
+            .then(response => response.json())
+            .then(data => this.setState({ students: data }));
+          
+          this.onAdd = this.onAdd.bind(this);
+          this.onClear = this.onClear.bind(this);
+          this.onChangeName = this.onChangeName.bind(this);
+          this.onChangeSurname = this.onChangeSurname.bind(this);
+          this.onChangeAverage = this.onChangeAverage.bind(this);
+          this.onChangeAge = this.onChangeAge.bind(this);
+        }
+
+        onAdd(e) {
+          e.preventDefault();
+          
+          if(this.state.index == -1) {
+              let newStudent = {name: this.state.name, surname: this.state.surname, average: this.state.average, age: this.state.age, index: this.state.index};
+              let students = this.state.students;
+              students.push(newStudent);
+              this.setState({students: students, name: "", surname: "", average: "", age: "", index: -1});
+            }
+          else {
+                let newStudents = this.state.students;
+                let i = this.state.index;
+                newStudents[i].name = this.state.name;
+                newStudents[i].surname = this.state.surname;
+                newStudents[i].age = this.state.age;
+                newStudents[i].average = this.state.average;
+                this.setState({students: newStudents, name: "", surname: "", age: "", average: "", index: -1});
+            }
+        }
+
+        onClear(e) {
+            e.preventDefault();
+            this.setState({name: "", surname: "", age: "", average: "", index: -1});
+        }
+
+        onChangeName(e) {
+          let val = e.target.value;
+          
+          this.setState({"name":  val});
+        }
+
+        onChangeSurname(e) {
+          let val = e.target.value;
+          
+          this.setState({"surname":  val});
+        }
+
+        onChangeAverage(e) {
+          let val = e.target.value;
+          
+          this.setState({"average":  val});
+        }
+
+
+        onChangeAge(e) {
+          let val = e.target.value;
+          
+          this.setState({"age":  val});
+        }
+
+        commonAverage() {
+            let sum = 0;
+            for (let stud of this.state.students)
+            sum += parseFloat(stud.average);
+            let average = (sum / this.state.students.length).toFixed(2);
+            return (<tr><td colspan="3" align="right"><b>Common average:</b></td><td>{average}</td></tr>);
+        }
+
+        onEdit(e, i) {
+          let student = this.state.students[i];
+
+          this.setState({name: student.name, surname: student.surname, age: student.age, average: student.average, index: i});
+        }
+
+        onDelete(e, i) {
+          let newStudents = this.state.students;
+          newStudents.splice(i, 1);
+
+          this.setState({students: newStudents});
+        }
+
+        render() {
+          let rows = [];
+          for (let stud of this.state.students) {
+            rows.push(<tr><td>{stud.name}</td>
+                <td>{stud.surname}</td>
+                <td>{stud.age}</td><td>{stud.average}</td>
+                <td><button onClick={(e) => this.onEdit(e, this.state.students.indexOf(stud))}>EDIT</button></td>
+                <td><button onClick={(e) => this.onDelete(e, this.state.students.indexOf(stud))}>DELETE</button></td></tr>);
+          }
+          return (
+          <div>
+            <table>
+              <tr><th>Name</th><th>Surname</th><th>Age</th><th>Average</th></tr>
+              {rows}
+              {this.commonAverage()}
+            </table>
+            <form>
+              <input type="text" value={this.state.name} onChange={this.onChangeName}/>
+              <b> - Name </b>
+              <br/>
+              <input type="text" value={this.state.surname} onChange={this.onChangeSurname}/>
+              <b> - Surame </b>
+              <br/>
+              <input type="text" value={this.state.age} onChange={this.onChangeAge}/>
+              <b> - Age </b>
+              <br/>
+              <input type="text" value={this.state.average} onChange={this.onChangeAverage}/>
+              <b> - Average </b>
+              <br/>
+              <button onClick={this.onAdd}>OK</button>
+              <button onClick={this.onClear}>CLEAR</button>
+            </form>
+          </div>
+          );
+        }
+      }
+
+      ReactDOM.render(
+        <MyComponent />,
+        document.getElementById("app")
+      )
+    </script>
+</body>
+</html>
